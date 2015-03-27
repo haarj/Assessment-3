@@ -7,7 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <MapKit/MapKit.h>
+#import "Bike.h"
 
 @interface MapViewController : UIViewController
+@property NSMutableArray *arrayOfBikes;
+@property Bike *bike;
+@property CLLocationCoordinate2D coordinate;
+@property MKPointAnnotation *bikeAnnotation;
 
 @end

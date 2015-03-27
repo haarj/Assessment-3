@@ -7,7 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <MapKit/MapKit.h> 
 
 @interface Bike : NSObject
+
+@property NSString *bikeName;
+@property int numberOfBikes;
+@property CLLocationCoordinate2D coordinate;
 
 @end
