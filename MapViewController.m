@@ -9,7 +9,7 @@
 #import "MapViewController.h"
 #import <MapKit/MapKit.h>
 
-@interface MapViewController () <MKMapViewDelegate, CLLocationManagerDelegate>
+@interface MapViewController () <MKMapViewDelegate, CLLocationManagerDelegate, UIAlertViewDelegate>
 
 @property (strong, nonatomic) IBOutlet MKMapView *mapView;
 @property CLLocationManager *locationManager;
@@ -66,16 +66,6 @@
 
 }
 
--(void)mapView:(MKMapView *)mapView annotationView:(MKAnnotationView *)view calloutAccessoryControlTapped:(UIControl *)control
-{
-    MKMapItem *mapItem = [[MKMapItem alloc]initWithPlacemark:[[MKPlacemark alloc]initWithCoordinate:self.bikeAnnotation.coordinate addressDictionary:nil]];
-
-//    mapItem.placemark.coordinate = self.bikeAnnotation.coordinate;
-
-    [self pullDirectionsWithMapItem:mapItem];
-}
-
-
 -(void)pullDirectionsWithMapItem:(MKMapItem *)mapItem
 {
     MKDirectionsRequest *request = [MKDirectionsRequest new];
@@ -93,9 +83,22 @@
              [stepString appendFormat:@"%i %@\n", stepCount, step.instructions];
              stepCount++;
          }
-         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"Directions" message:[NSString stringWithFormat:@"%@", stepString] delegate:self cancelButtonTitle:nil otherButtonTitles:@"Thanks", nil];
+
+
+         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"Directions" message:stepString delegate:self cancelButtonTitle:nil otherButtonTitles:@"Thanks", nil];
          [alertView show];
-         NSLog(@"%@", stepString);
+
+         alertView.message = stepString;
      }];
+
 }
+
+-(void)mapView:(MKMapView *)mapView annotationView:(MKAnnotationView *)view calloutAccessoryControlTapped:(UIControl *)control
+{
+    MKMapItem *mapItem = [[MKMapItem alloc]initWithPlacemark:[[MKPlacemark alloc]initWithCoordinate:self.bikeAnnotation.coordinate addressDictionary:nil]];
+
+    [self pullDirectionsWithMapItem:mapItem];
+
+}
+
 @end

@@ -10,11 +10,14 @@
 #import "MapViewController.h"
 #import "Bike.h"
 
-@interface StationsListViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface StationsListViewController () <UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
 @property NSMutableArray *arrayofBikes;
+@property NSMutableArray *filteredArrayOfBikes;
+@property CLLocationManager *locationManager;
+
 
 @end
 
@@ -23,9 +26,17 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.searchBar.delegate = self;
+
     self.arrayofBikes = [NSMutableArray new];
     [self getDataFromWebsite];
+
+    self.locationManager = [[CLLocationManager alloc]init];
+    [self.locationManager requestWhenInUseAuthorization];
+    self.locationManager.delegate = self;
+
 }
+
 
 
 #pragma mark - GET DATA FROM API
@@ -95,7 +106,15 @@
 }
 
 
-#pragma mark - UITableView
+#pragma mark - UITableView/UISearchBar
+
+
+//-(void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+//{
+//
+//    [self.tableView reloadData];
+//}
+
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
