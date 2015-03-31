@@ -14,5 +14,6 @@
 @property NSString *bikeName;
 @property int numberOfBikes;
 @property CLLocationCoordinate2D coordinate;
+@property double distance;
 
 @end

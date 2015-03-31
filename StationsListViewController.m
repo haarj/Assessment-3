@@ -10,13 +10,17 @@
 #import "MapViewController.h"
 #import "Bike.h"
 
-@interface StationsListViewController () <UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, CLLocationManagerDelegate>
+@interface StationsListViewController () <UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate,CLLocationManagerDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
 @property NSMutableArray *arrayofBikes;
 @property NSMutableArray *filteredArrayOfBikes;
 @property CLLocationManager *locationManager;
+@property CLLocation *userLocation;
+@property BOOL *isFiltered;
+@property BOOL *isAscending;
+
 
 
 @end
@@ -29,15 +33,19 @@
     self.searchBar.delegate = self;
 
     self.arrayofBikes = [NSMutableArray new];
+    self.filteredArrayOfBikes = [NSMutableArray arrayWithCapacity:[self.arrayofBikes count]];
     [self getDataFromWebsite];
 
-    self.locationManager = [[CLLocationManager alloc]init];
+    self.locationManager = [CLLocationManager new];
     [self.locationManager requestWhenInUseAuthorization];
+    [self.locationManager startUpdatingLocation];
     self.locationManager.delegate = self;
+    self.isFiltered = NO;
+    self.isAscending = YES;
+
+    [self sortTableview];
 
 }
-
-
 
 #pragma mark - GET DATA FROM API
 
@@ -102,24 +110,28 @@
     bike.coordinate = coordinate;
     // save to array
     [self.arrayofBikes addObject:bike];
-    
+
+//    for (Bike *bike in self.arrayofBikes)
+//    {
+//        CLLocationDistance dis = [self getDistanceFromUserLocationToBikeStation:bike.coordinate];
+//        bike.distance = dis;
+//    }
+
 }
 
 
 #pragma mark - UITableView/UISearchBar
 
-
-//-(void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
-//{
-//
-//    [self.tableView reloadData];
-//}
-
-
+//Need to change the number of rows based on ifFiltered or not.
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-
-    return self.arrayofBikes.count;
+    if (self.isFiltered)
+    {
+        return self.filteredArrayOfBikes.count;
+    }else
+    {
+        return self.arrayofBikes.count;
+    }
 }
 
 
@@ -150,20 +162,60 @@
     }
 }
 
+#pragma Mark SEARCH AND SORTING
+
+-(void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    if (self.searchBar.text.length == 0)
+    {
+        self.isFiltered = NO;
+    }else
+    {
+        self.isFiltered = YES;
+        self.filteredArrayOfBikes = [NSMutableArray new];
+        for (Bike *bike in self.arrayofBikes)
+        {
+            NSRange nameRange = [bike.bikeName rangeOfString:self.searchBar.text options:NSCaseInsensitiveSearch];
+            if (nameRange.location != NSNotFound)
+            {
+                [self.filteredArrayOfBikes addObject:bike];
+            }
+        }
+    }
+    [self.tableView reloadData];
+}
+
+//-(CLLocationDistance)getDistanceFromUserLocationToBikeStation:(CLLocationCoordinate2D *)bikeLocation
+//{
+//    for (Bike *bike in self.arrayofBikes)
+//    {
+////        CLLocation *location =  bike.
+//        CLLocationDistance distance = [self.userLocation distanceFromLocation:<#(const CLLocation *)#>];
+//        return distance;
+//        NSLog(@"%f", distance);
+//    }
+//}
 
 
+-(void)sortTableview
+{
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]initWithKey:@"distance" ascending:YES];
+    NSArray *sortDescriptors = @[sortDescriptor];
+    NSArray *sortedArray = [self.arrayofBikes sortedArrayUsingDescriptors:sortDescriptors];
+    self.isAscending = !self.isAscending;
 
-
-
-
-
-
-
-
-
-
-
-
-
+    if (self.isFiltered)
+    {
+        sortedArray = [self.filteredArrayOfBikes sortedArrayUsingDescriptors:sortDescriptors];
+        self.filteredArrayOfBikes = [NSMutableArray new];
+        self.filteredArrayOfBikes = [NSMutableArray arrayWithArray:sortedArray];
+    }else
+    {
+        sortedArray = [self.arrayofBikes sortedArrayUsingDescriptors:sortDescriptors];
+        self.arrayofBikes = [NSMutableArray new];
+        self.arrayofBikes = [NSMutableArray arrayWithArray:sortedArray];
+    }
+    [self.tableView reloadData];
+}
 
 @end
